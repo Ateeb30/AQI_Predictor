@@ -1,0 +1,29 @@
+# Environment secrets
+.env
+
+# Python cache & compiled files
+__pycache__/
+*.pyc
+
+# Local data & artifacts
+outputs/
+*.pkl
+*.joblib
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# PDF files
+*.pdf
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# OS files
+.DS_Store
+
+# Hopsworks download cache
+*.zip
+hsml-*

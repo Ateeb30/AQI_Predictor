@@ -1,0 +1,47 @@
+name: Feature Pipeline (Hourly)
+
+on:
+  schedule:
+    # Runs every hour at minute 0
+    - cron: "0 * * * *"
+  workflow_dispatch:  # Allow manual triggering from the GitHub UI
+
+jobs:
+  feature-pipeline:
+    name: Run Hourly Feature Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      AQICN_API_KEY:         ${{ secrets.AQICN_API_KEY }}
+      OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
+      HOPSWORKS_API_KEY:     ${{ secrets.HOPSWORKS_API_KEY }}
+      HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME }}
+      CITY:                  ${{ secrets.CITY }}
+      CITY_LAT:              ${{ secrets.CITY_LAT }}
+      CITY_LON:              ${{ secrets.CITY_LON }}
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 📦 Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: 🌫️ Run feature pipeline
+        run: python pipelines/feature_pipeline.py
+
+      - name: 📝 Upload pipeline logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-pipeline-log-${{ github.run_number }}
+          path: "*.log"
+          retention-days: 7
+          if-no-files-found: ignore
