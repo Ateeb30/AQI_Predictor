@@ -172,22 +172,14 @@ def backfill(
             api_key_value=config.HOPSWORKS_API_KEY,
         )
         fs = project.get_feature_store()
-        try:
-            fg = fs.get_feature_group(
-                name=config.FEATURE_GROUP_NAME,
-                version=config.FEATURE_GROUP_VERSION,
-            )
-        except Exception:  # noqa: BLE001
-            fg = None
-
-        if fg is None:
-            fg = fs.create_feature_group(
-                name=config.FEATURE_GROUP_NAME,
-                version=config.FEATURE_GROUP_VERSION,
-                primary_key=["timestamp", "city"],
-                event_time="timestamp",
-                online_enabled=False,
-            )
+        fg = fs.get_or_create_feature_group(
+            name=config.FEATURE_GROUP_NAME,
+            version=config.FEATURE_GROUP_VERSION,
+            primary_key=["timestamp", "city"],
+            event_time="timestamp",
+            online_enabled=False,
+            description="Hourly AQI + weather features for AQI Predictor model.",
+        )
         fg.insert(df, write_options={"wait_for_job": True})
         logger.info("Inserted %d rows into Hopsworks.", len(df))
     else:

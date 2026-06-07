@@ -34,7 +34,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install "hopsworks>=3.7.0"
+          pip install "hopsworks[python]==4.7.*"
 
       - name: 🌫️ Run feature pipeline
         run: python pipelines/feature_pipeline.py

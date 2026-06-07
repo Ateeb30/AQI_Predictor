@@ -21,7 +21,7 @@ tensorflow==2.16.2
 shap==0.49.1
 
 # NOTE: hopsworks is installed separately (see below) due to avro conflicts.
-# Run: pip install "hopsworks>=3.7.0"
+# Run: pip install "hopsworks[python]==4.7.*"
 
 # ── API & serving ─────────────────────────────────────────────────────────────
 fastapi==0.115.12

@@ -52,18 +52,7 @@ logger = logging.getLogger("feature_pipeline")
 def _get_or_create_feature_group(project: object) -> object:
     """Return an existing Hopsworks feature group or create a new one."""
     fs = project.get_feature_store()
-    try:
-        fg = fs.get_feature_group(
-            name=config.FEATURE_GROUP_NAME,
-            version=config.FEATURE_GROUP_VERSION,
-        )
-        logger.info("Found existing feature group '%s'.", config.FEATURE_GROUP_NAME)
-        return fg
-    except Exception:  # noqa: BLE001
-        pass
-
-    logger.info("Creating feature group '%s' …", config.FEATURE_GROUP_NAME)
-    return fs.create_feature_group(
+    return fs.get_or_create_feature_group(
         name=config.FEATURE_GROUP_NAME,
         version=config.FEATURE_GROUP_VERSION,
         primary_key=["timestamp", "city"],
