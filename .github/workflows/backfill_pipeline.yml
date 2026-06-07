@@ -16,7 +16,7 @@ jobs:
   backfill-pipeline:
     name: Run Historical Backfill Pipeline
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     env:
       AQICN_API_KEY:          ${{ secrets.AQICN_API_KEY }}
