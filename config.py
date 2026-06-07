@@ -78,9 +78,18 @@ OPENWEATHER_BASE_URL: str = "https://api.openweathermap.org"
 API_HOST: str = os.getenv("API_HOST", "127.0.0.1")
 API_PORT: int = int(os.getenv("API_PORT", "8000"))
 
+_render_hostport = os.getenv("FASTAPI_HOSTPORT")
 _render_host = os.getenv("FASTAPI_HOST")
-if _render_host:
-    _default_url = f"https://{_render_host}"
+
+if _render_hostport:
+    # Use internal Render network (HTTP)
+    _default_url = f"http://{_render_hostport}"
+elif _render_host:
+    if ".onrender.com" in _render_host:
+        _default_url = f"https://{_render_host}"
+    else:
+        # Default internal port on Render is usually 10000
+        _default_url = f"http://{_render_host}:10000"
 else:
     _default_url = f"http://{API_HOST}:{API_PORT}"
 
