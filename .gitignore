@@ -5,10 +5,10 @@
 __pycache__/
 *.pyc
 
-# Local data & artifacts
-outputs/
-*.pkl
-*.joblib
+# Local data & artifacts (NOW TRACKED FOR PLAN B)
+# outputs/
+# *.pkl
+# *.joblib
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
