@@ -20,12 +20,18 @@ _ENV_FILE: Path = _ROOT_DIR / ".env"
 
 load_dotenv(dotenv_path=_ENV_FILE, override=True)
 
-# ---------------------------------------------------------------------------
-# API Keys
-# ---------------------------------------------------------------------------
-AQICN_API_KEY: str = os.environ["AQICN_API_KEY"]
-OPENWEATHER_API_KEY: str = os.environ["OPENWEATHER_API_KEY"]
-HOPSWORKS_API_KEY: str = os.environ["HOPSWORKS_API_KEY"]
+def _get_required_env(name: str) -> str:
+    val = os.getenv(name)
+    if not val:
+        raise KeyError(
+            f"Missing required environment variable '{name}'. "
+            "Please ensure it is set in your local .env file or registered as a GitHub Secret."
+        )
+    return val
+
+AQICN_API_KEY: str = _get_required_env("AQICN_API_KEY")
+OPENWEATHER_API_KEY: str = _get_required_env("OPENWEATHER_API_KEY")
+HOPSWORKS_API_KEY: str = _get_required_env("HOPSWORKS_API_KEY")
 
 # ---------------------------------------------------------------------------
 # Hopsworks
