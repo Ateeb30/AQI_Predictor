@@ -12,7 +12,7 @@ In this project, we built a fully automated, end-to-end Machine Learning pipelin
 
 **Architecture & Technologies Used:**
 - **Local Parquet Feature Store:** We engineered features and stored them locally in Parquet files within the GitHub repository, eliminating the need for complex external databases.
-- **Automated Pipelines:** We used GitHub Actions to automatically trigger our Feature Pipeline (hourly) and Training Pipeline (daily).
+- **Automated Pipelines:** We use GitHub Actions to execute our Feature Pipeline and Training Pipeline. However, due to the lagging and unreliability of GitHub's internal cron scheduler, we implemented an external webhook service (`cron-job.org`) to strictly trigger the workflows and guarantee precise execution times.
 - **FastAPI Backend:** We built a high-performance REST API using FastAPI to serve our model predictions.
 - **Streamlit Dashboard:** We developed a premium, interactive frontend dashboard using Streamlit to visualize the current air quality, display 3-day forecasts, and present model explainability charts.
 
