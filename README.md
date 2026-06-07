@@ -3,7 +3,7 @@
 [![Feature Pipeline (Hourly)](https://github.com/Ateeb30/AQI_Predictor/actions/workflows/feature_pipeline.yml/badge.svg)](https://github.com/Ateeb30/AQI_Predictor/actions/workflows/feature_pipeline.yml)
 [![Training Pipeline (Daily)](https://github.com/Ateeb30/AQI_Predictor/actions/workflows/training_pipeline.yml/badge.svg)](https://github.com/Ateeb30/AQI_Predictor/actions/workflows/training_pipeline.yml)
 
-A production-grade, serverless Machine Learning system that predicts Air Quality Index (AQI) forecasts for the next 24, 48, and 72 hours for the city of Karachi. Built using a decoupled, 4-pipeline architecture, it leverages Hopsworks as a feature store and model registry, GitHub Actions for orchestration, FastAPI for the model serving backend, and Streamlit for a user-facing dashboard.
+A production-grade, serverless Machine Learning system that predicts Air Quality Index (AQI) forecasts for the next 24, 48, and 72 hours for the city of Karachi. Built using a decoupled, 4-pipeline architecture, it leverages a Local Parquet Feature Store and Model Registry, GitHub Actions for orchestration, FastAPI for the model serving backend, and Streamlit for a user-facing dashboard.
 
 ---
 
@@ -12,66 +12,25 @@ A production-grade, serverless Machine Learning system that predicts Air Quality
 ### 1. Executive Summary & Problem Statement
 Air pollution remains a critical global health crisis. Static index reporting tells citizens the air quality *right now*, but fails to provide the foresight required to plan outdoor activities, protect vulnerable demographics, or initiate local policy interventions. 
 
-This project delivers a **Serverless MLOps system** that predicts the AQI for the upcoming three days (24-hour, 48-hour, and 72-hour horizons) using a multi-output regression setup. By tracking ambient air pollutants and atmospheric conditions, the system captures complex temporal patterns. The architecture runs completely serverless and free of infrastructure costs, leveraging Github Actions for pipeline runners, Hopsworks for storage/registry, and Streamlit Cloud for serving the UI.
+This project delivers a **Serverless MLOps system** that predicts the AQI for the upcoming three days (24-hour, 48-hour, and 72-hour horizons) using a multi-output regression setup. By tracking ambient air pollutants and atmospheric conditions, the system captures complex temporal patterns. The architecture runs completely serverless and free of infrastructure costs, leveraging Github Actions for pipeline runners, local Parquet for storage/registry, and Streamlit for serving the UI.
 
 ---
 
 ### 2. System Architecture & The 4-Pipeline Loop
-The application is structured into four independent, decoupled pipelines communicating via a Feature Store and Model Registry. This decoupled nature ensures that ingestion, training, serving, and UI rendering can scale and fail independently.
+The application is structured into four independent, decoupled pipelines communicating via a Local Feature Store and Model Registry hosted directly in the GitHub repository. This decoupled nature ensures that ingestion, training, serving, and UI rendering can scale and fail independently.
 
-```text
-       +-----------------------------------------------------------------------+
-       |                                                                       |
-       |  1. BACKFILL PIPELINE (Historical Open-Meteo Data)                    |
-       |     Downloads past weather & air quality data, engineers features     |
-       |     and targets, and uploads them to the Feature Store.               |
-       |                                                                       |
-       +-----------------------------------+-----------------------------------+
-                                           |
-                                           v
-       +-----------------------------------------------------------------------+
-       |                                                                       |
-       |  2. FEATURE PIPELINE (Hourly cron / AQICN & OpenWeather API)          |
-       |     Fetches live ambient conditions, writes current observations      |
-       |     directly to the Feature Store (Hopsworks).                        |
-       |                                                                       |
-       +-----------------------------------+-----------------------------------+
-                                           |
-                                           v
-                                   [ FEATURE STORE ]
-                                 (Hopsworks Offline)
-                                           |
-                                           v
-       +-----------------------------------------------------------------------+
-       |                                                                       |
-       |  3. TRAINING PIPELINE (Daily cron / Model Selection)                  |
-       |     Retrieves history from Feature Store, trains/evaluates RF,        |
-       |     XGBoost & Linear models. Registers the best model to the          |
-       |     Model Registry and generates feature importance plots (SHAP).     |
-       |                                                                       |
-       +-----------------------------------+-----------------------------------+
-                                           |
-                                           v
-                                  [ MODEL REGISTRY ]
-                                   (Hopsworks Registry)
-                                           |
-                                           v
-       +-----------------------------------------------------------------------+
-       |                                                                       |
-       |  4. SERVING & DASHBOARD (FastAPI Serving + Streamlit Dashboard)       |
-       |     - FastAPI endpoint downloads registered model + live data         |
-       |       and serves predictions.                                         |
-       |     - Streamlit provides an interactive graphical interface.          |
-       |                                                                       |
-       +-----------------------------------------------------------------------+
-```
+* **1. Backfill Pipeline (Historical Data)**
+  Downloads historical weather and air quality data from the Open-Meteo API. It engineers temporal features and shifts the target columns (`aqi_next_24h`, `aqi_next_48h`, `aqi_next_72h`), saving the initial dataset into a local Parquet database (`data/local_feature_store/`).
 
-1. **Backfill Pipeline**: Fetches true hourly historical data covering weather and ambient air quality from Open-Meteo API. It engineers features and shifts the AQI target columns (`aqi_next_24h`, `aqi_next_48h`, `aqi_next_72h`), saving the initial dataset into Hopsworks.
-2. **Feature Ingestion Pipeline**: Executed hourly via GitHub Actions. It fetches current pollutant statistics from the AQICN API (University of Karachi station `@-401143`) and current weather attributes from OpenWeather. It formats, engineers lags, and appends the new row into the Feature Group.
-3. **Training Pipeline**: Runs daily. It pulls the updated feature history from the Feature Store, performs chronological time-series splitting, trains candidate regression models, scores them, registers the best model in the registry, and uploads the SHAP summary chart for feature explainability.
-4. **Serving & Dashboard Pipeline**: 
-   * **FastAPI Backend**: Exposes endpoints `/predict` (fetches the latest features, pulls the best model from the registry, and predicts the 3-day forecast) and `/history` (returns recent trends).
-   * **Streamlit Dashboard**: A beautiful, user-friendly frontend allowing users to inspect current air quality, explore predictions, read explainability plots, and adjust sensitivity parameters.
+* **2. Feature Pipeline (Hourly Cron)**
+  Executed automatically every hour via GitHub Actions. It fetches current pollutant statistics from the AQICN API (Karachi station) and current weather attributes from OpenWeather. It formats the data, engineers lags, appends the new row into the Parquet database, and automatically commits the updated database back to the GitHub repository.
+
+* **3. Training Pipeline (Daily Cron)**
+  Executed automatically every day via GitHub Actions. It pulls the updated Parquet database, performs chronological time-series splitting, trains candidate regression models (RF, XGBoost, Ridge, LightGBM, LSTM), and scores them. The best performing model artifacts and SHAP feature importance plots are saved to the `outputs/` folder and automatically committed back to the GitHub repository.
+
+* **4. Serving & Dashboard Pipeline (FastAPI + Streamlit)**
+  * **FastAPI Backend**: Exposes the `/predict` endpoint, which loads the latest trained models from the local registry, fetches live features, and serves the 3-day AQI forecast.
+  * **Streamlit Dashboard**: A beautiful, user-friendly frontend allowing users to inspect current air quality, explore predictions, read explainability plots, and interact with the data in real-time.
 
 ---
 
