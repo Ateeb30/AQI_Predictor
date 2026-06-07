@@ -1,0 +1,52 @@
+services:
+  # -----------------------------------------------------
+  # 1. FastAPI Backend
+  # -----------------------------------------------------
+  - type: web
+    name: aqi-backend
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: pip install -r requirements.txt && pip install "hopsworks[python]==4.7.*"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      # Required keys for the backend to fetch data and connect to Hopsworks
+      - key: AQICN_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: HOPSWORKS_API_KEY
+        sync: false
+      - key: CITY
+        value: Karachi
+
+  # -----------------------------------------------------
+  # 2. Streamlit Dashboard
+  # -----------------------------------------------------
+  - type: web
+    name: aqi-dashboard
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app/dashboard.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      # This points the frontend to the backend URL automatically on Render
+      - key: FASTAPI_BASE_URL
+        fromService:
+          name: aqi-backend
+          type: web
+          property: url
+      # The frontend also loads config.py so it needs these (or you can dummy them if it doesn't strictly need them, but config.py has _get_required_env)
+      - key: AQICN_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: HOPSWORKS_API_KEY
+        sync: false
+      - key: CITY
+        value: Karachi

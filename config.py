@@ -77,4 +77,4 @@ OPENWEATHER_BASE_URL: str = "https://api.openweathermap.org"
 # ---------------------------------------------------------------------------
 API_HOST: str = os.getenv("API_HOST", "127.0.0.1")
 API_PORT: int = int(os.getenv("API_PORT", "8000"))
-FASTAPI_BASE_URL: str = f"http://{API_HOST}:{API_PORT}"
+FASTAPI_BASE_URL: str = os.getenv("FASTAPI_BASE_URL", f"http://{API_HOST}:{API_PORT}")
