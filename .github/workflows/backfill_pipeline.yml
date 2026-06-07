@@ -1,0 +1,49 @@
+name: Backfill Pipeline (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Start date (YYYY-MM-DD)'
+        required: true
+        default: '2026-04-01'
+      end_date:
+        description: 'End date (YYYY-MM-DD)'
+        required: true
+        default: '2026-06-05'
+
+jobs:
+  backfill-pipeline:
+    name: Run Historical Backfill Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      AQICN_API_KEY:          ${{ secrets.AQICN_API_KEY }}
+      OPENWEATHER_API_KEY:    ${{ secrets.OPENWEATHER_API_KEY }}
+      HOPSWORKS_API_KEY:      ${{ secrets.HOPSWORKS_API_KEY }}
+      HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME }}
+      CITY:                   ${{ secrets.CITY }}
+      CITY_LAT:               ${{ secrets.CITY_LAT }}
+      CITY_LON:               ${{ secrets.CITY_LON }}
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install "hopsworks>=3.7.0"
+
+      - name: 🌫️ Run backfill pipeline
+        run: |
+          python pipelines/backfill_pipeline.py \
+            --start-date "${{ github.event.inputs.start_date }}" \
+            --end-date "${{ github.event.inputs.end_date }}"

@@ -65,12 +65,16 @@ def _load_features(project: object | None = None) -> pd.DataFrame:
     """
     if _HOPSWORKS_AVAILABLE and project is not None:
         fs = project.get_feature_store()
-        fg = fs.get_feature_group(
-            name=config.FEATURE_GROUP_NAME,
-            version=config.FEATURE_GROUP_VERSION,
-        )
-        logger.info("Reading from Hopsworks feature group '%s' …", config.FEATURE_GROUP_NAME)
-        df: pd.DataFrame = fg.read()
+        try:
+            fg = fs.get_feature_group(
+                name=config.FEATURE_GROUP_NAME,
+                version=config.FEATURE_GROUP_VERSION,
+            )
+            logger.info("Reading from Hopsworks feature group '%s' …", config.FEATURE_GROUP_NAME)
+            df: pd.DataFrame = fg.read()
+        except Exception as exc:
+            logger.error("Could not read feature group '%s' from Hopsworks: %s", config.FEATURE_GROUP_NAME, exc)
+            df = pd.DataFrame()
     else:
         logger.info("Reading from local Parquet store (dev mode) …")
         store = LocalFeatureStore()
