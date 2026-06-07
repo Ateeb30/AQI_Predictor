@@ -36,11 +36,11 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       # This points the frontend to the backend URL automatically on Render
-      - key: FASTAPI_BASE_URL
+      - key: FASTAPI_HOST
         fromService:
           name: aqi-backend
           type: web
-          property: url
+          property: host
       # The frontend also loads config.py so it needs these (or you can dummy them if it doesn't strictly need them, but config.py has _get_required_env)
       - key: AQICN_API_KEY
         sync: false
