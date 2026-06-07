@@ -33,13 +33,9 @@ from src.data_fetcher import OpenMeteoFetcher
 from src.local_store import LocalFeatureStore
 
 # ---------------------------------------------------------------------------
-# Detect Hopsworks
+# Detect whether Hopsworks is available (FORCED FALSE FOR PLAN B)
 # ---------------------------------------------------------------------------
-try:
-    import hopsworks as _hw  # noqa: F401
-    _HOPSWORKS_AVAILABLE = True
-except ImportError:
-    _HOPSWORKS_AVAILABLE = False
+_HOPSWORKS_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Logging

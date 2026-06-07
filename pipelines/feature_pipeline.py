@@ -26,13 +26,9 @@ from src.feature_engineer import compute_features
 from src.local_store import LocalFeatureStore
 
 # ---------------------------------------------------------------------------
-# Detect whether Hopsworks is available
+# Detect whether Hopsworks is available (FORCED FALSE FOR PLAN B)
 # ---------------------------------------------------------------------------
-try:
-    import hopsworks as _hw  # noqa: F401
-    _HOPSWORKS_AVAILABLE = True
-except ImportError:
-    _HOPSWORKS_AVAILABLE = False
+_HOPSWORKS_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Logging

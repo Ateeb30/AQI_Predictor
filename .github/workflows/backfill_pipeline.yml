@@ -17,6 +17,8 @@ jobs:
     name: Run Historical Backfill Pipeline
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
 
     env:
       AQICN_API_KEY:          ${{ secrets.AQICN_API_KEY }}
@@ -47,3 +49,11 @@ jobs:
           python pipelines/backfill_pipeline.py \
             --start-date "${{ github.event.inputs.start_date }}" \
             --end-date "${{ github.event.inputs.end_date }}"
+
+      - name: 💾 Commit and push local database
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Automated update of local feature store (Backfill)" || echo "No changes to commit"
+          git push
