@@ -178,6 +178,9 @@ def backfill(
                 version=config.FEATURE_GROUP_VERSION,
             )
         except Exception:  # noqa: BLE001
+            fg = None
+
+        if fg is None:
             fg = fs.create_feature_group(
                 name=config.FEATURE_GROUP_NAME,
                 version=config.FEATURE_GROUP_VERSION,
