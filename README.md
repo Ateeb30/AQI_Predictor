@@ -1,6 +1,5 @@
 # Serverless ML System: 3-Day Air Quality Index (AQI) Predictor
 
-**🔴 Live Dashboard:** [https://aqi-dashboard-y6po.onrender.com/](https://aqi-dashboard-y6po.onrender.com/)
 
 A production-grade, serverless Machine Learning system that predicts Air Quality Index (AQI) forecasts for the next 24, 48, and 72 hours for the city of Karachi.
 
